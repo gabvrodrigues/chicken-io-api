@@ -3,7 +3,7 @@ const { Op } = require("sequelize");
 const bcrypt = require("bcrypt");
 
 const get = async (req, res, next) => {
-    const user = await user.findAll();
+    const user = await Users.findAll();
     return res.status(201).json(user);
 };
 
