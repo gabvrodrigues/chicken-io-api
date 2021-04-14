@@ -7,5 +7,4 @@ module.exports = {
     },
     dialect: 'postgres',
     timezone: '-03:00',
-    operatorsAliases: false
 }
