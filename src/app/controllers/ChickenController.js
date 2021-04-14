@@ -1,6 +1,7 @@
 const { Chickens } = require('../models');
 const { FeederWeightLogs } = require('../models');
 const { Tags } = require('../models');
+const { Users } = require('../models');
 const { Op } = require("sequelize");
 var moment = require('moment-timezone');
 
@@ -93,7 +94,7 @@ const destroy = async (req, res, next) => {
 };
 const testConnection = async (req, res, next) => {
     try {
-        await Chickens.findAll({ limit: 1 });
+        await Users.findAll({ limit: 1 });
         return res.status(200).json({ message: `Conexão estabelecida` });
     }
     catch (e) {
