@@ -1,12 +1,18 @@
 const fs = require('fs');
 const path = require('path');
 const Sequelize = require('sequelize');
-const config = require('../../config/database.js');
-
-// const EnvironmentalLog = require("./EnvironmentalLog");
+const envConfigs = require('../../config/database.js');
+const env = process.env.NODE_ENV || 'development';
+const config = envConfigs[env];
 
 const db = {};
-const sequelize = new Sequelize(config);
+let sequelize;
+if (config.url) {
+  sequelize = new Sequelize(config.url, config);
+} else {
+  sequelize = new Sequelize(config.database, config.username, config.password, config);
+}
+// = new Sequelize(config);
 
 fs
   .readdirSync(__dirname)

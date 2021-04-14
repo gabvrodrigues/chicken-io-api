@@ -16,7 +16,6 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'Users',
     underscored: true,
-    freezeTableName: true,
   });
   return Users;
 };

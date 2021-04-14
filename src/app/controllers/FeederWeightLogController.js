@@ -19,6 +19,7 @@ const get = async (req, res, next) => {
         return res.status(200).json({ logs });
     }
     catch (e) {
+        console.log(e)
         return res.status(500).json({ message: 'Erro ao carregar informações do comedouro das galinhas' });
     }
 };
