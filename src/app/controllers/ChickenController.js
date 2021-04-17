@@ -16,7 +16,11 @@ const get = async (req, res, next) => {
             });
             return res.status(200).json(...chicken);
         }
-        const chickens = await Chickens.findAll();
+        const chickens = await Chickens.findAll({
+            include: [
+                { model: Tags }
+            ]
+        });
         return res.status(200).json({ chickens });
     }
     catch (e) {
@@ -32,7 +36,7 @@ const getCanEat = async (req, res, next) => {
         const endDate = moment().endOf('day').format("YYYY-MM-DD HH:mm:ss");
 
         const chicken = await Chickens.findAll({
-            attributes: ['id', 'meals_per_day'],
+            attributes: ['id', 'meals_per_day', 'meals_interval'],
             include: [
                 { model: Tags, where: { tag_code: tagCode } }
             ]
@@ -45,9 +49,17 @@ const getCanEat = async (req, res, next) => {
                 chicken_id: chicken.map((el) => el.id)
             }
         });
-        let nextMealNumber = 0
-        if (mealsAtDay < chicken.map(el => el.meals_per_day)) {
-            nextMealNumber = mealsAtDay + 1;
+
+        const lastMealTime = await FeederWeightLogs.max('timestamp', {
+            where: {
+                chicken_id: chicken.map((el) => el.id)
+            }
+        });
+
+        const canEatInterval = moment(lastMealTime).add(chicken.map((el) => el.meals_interval), 'hours') <= moment()
+        let nextMealNumber = 0;
+        if (mealsAtDay < chicken.map(el => el.meals_per_day && canEatInterval)) {
+            nextMealNumber = mealsAtDay + 1
         }
         return res.status(200).json({ nextMealNumber: nextMealNumber });
     }
@@ -64,7 +76,7 @@ const create = async (req, res, next) => {
     }
     catch (e) {
         console.error(e);
-        return res.status(500).json({ message: 'Erro ao criar galinha!' });
+        return res.status(500).json({ message: 'Erro ao criar galinha!' + e });
     }
 };
 const update = async (req, res, next) => {

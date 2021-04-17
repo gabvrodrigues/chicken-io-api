@@ -4,6 +4,7 @@ const TagRoute = require('./tag');
 const ChickenRoute = require('./chicken');
 const FeederWeightLogRoute = require('./feederWeightLog');
 const ChickenWeightLogRoute = require('./chickenWeightLog');
+const NestWeightLogRoute = require('./nestWeightLog');
 
 module.exports = (app) => {
     UserRoute(app),
@@ -11,5 +12,6 @@ module.exports = (app) => {
     TagRoute(app),
     ChickenRoute(app),
     FeederWeightLogRoute(app),
-    ChickenWeightLogRoute(app)
+    ChickenWeightLogRoute(app),
+    NestWeightLogRoute(app)
 }

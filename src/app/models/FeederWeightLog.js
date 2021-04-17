@@ -5,7 +5,7 @@ const {
 module.exports = (sequelize, DataTypes) => {
   class FeederWeightLogs extends Model {
     static associate(models) {
-      FeederWeightLogs.hasOne(models.Chickens, {foreignKey: 'id'})
+      FeederWeightLogs.belongsTo(models.Chickens)
     }
   };
   FeederWeightLogs.init({

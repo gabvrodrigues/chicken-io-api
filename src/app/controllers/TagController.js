@@ -6,6 +6,21 @@ const get = async (req, res, next) => {
     return res.status(201).json({ tag });
 };
 
+const getAvailableTags = async (req, res, next) => {
+    try {
+        const tags = await Tags.findAll({
+            where: {
+                is_using: false
+            }
+        });
+        return res.status(201).json({ tags });
+    }
+    catch (e) {
+        console.error(e);
+        return res.status(500).json({ message: 'Erro ao carregar tags!' + e });
+    }
+};
+
 const create = async (req, res, next) => {
     try {
         await Tags.create(req.body);
@@ -24,7 +39,22 @@ const update = async (req, res, next) => {
         await tag.update(newTag);
         return res.status(201).json({ message: 'Tag atualizada com sucesso!' });
     }
-    return res.status(500).json({ message: 'Tag atualizada com sucesso!' })
+    return res.status(500).json({ message: 'Erro ao atualizar com sucesso!' })
+};
+
+const setTagStatus = async (req, res, next) => {
+    try {
+        let code = req.params.code;
+        await Tags.update(
+            { is_using: req.body.is_using },
+            { where: { tag_code: code }}
+        );
+        return res.status(201).json({ message: 'Tag atualizada com sucesso!' });
+    }
+    catch (e) {
+        return res.status(500).json({ message: 'Erro ao atualizar tag!' + e })
+    }
+
 };
 
 const destroy = async (req, res, next) => {
@@ -44,4 +74,6 @@ module.exports = {
     update,
     destroy,
     get,
+    getAvailableTags,
+    setTagStatus
 }

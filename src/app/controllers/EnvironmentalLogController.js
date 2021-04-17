@@ -1,10 +1,31 @@
 const { EnvironmentalLogs } = require('./../models');
-const { Op } = require("sequelize");
+const sequelize = require("sequelize");
 var moment = require('moment-timezone');
 
 const get = async (req, res, next) => {
-    const environmentalData = await EnvironmentalLogs.findAll();
-    return res.status(200).send(environmentalData);
+    const type = req.params.type;
+    try {
+        const environmentalData = await EnvironmentalLogs.findAll({
+            attributes: [
+                [sequelize.literal(`AVG(${type})`), type],
+                [sequelize.literal(`DATE("timestamp")`), 'timestamp']
+            ],
+            group: [sequelize.literal(`DATE("timestamp")`)],
+            order: [
+                [sequelize.literal(`DATE("timestamp")`), 'ASC']
+            ],
+        });
+        return res.status(200).json({
+            avg: environmentalData.map((el) => el[type]),
+            timestamp: environmentalData.map((el) => moment(el.timestamp).format("DD/MM/YYYY"))
+        });
+    }
+    catch (e) {
+        console.error(e)
+        return res.status(500).json({ message: 'Erro ao carregar dados ambientais' });
+    }
+
+
 };
 const getByDate = async (req, res, next) => {
     try {
@@ -22,11 +43,11 @@ const getByDate = async (req, res, next) => {
         });
         return res.status(200).json({ environmentalData });
     }
-    catch(e) {
+    catch (e) {
         console.error(e)
         return res.status(500).json({ message: 'Erro ao carregar dados ambientais' });
     }
-   
+
 };
 const create = async (req, res, next) => {
     try {

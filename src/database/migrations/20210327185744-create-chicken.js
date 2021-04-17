@@ -20,6 +20,9 @@ module.exports = {
       meals_per_day: {
         type: Sequelize.FLOAT
       },
+      meals_interval: {
+        type: Sequelize.FLOAT
+      },
       path_image: {
         type: Sequelize.STRING
       },

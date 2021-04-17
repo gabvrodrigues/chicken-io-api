@@ -3,17 +3,17 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class NestWeightLog extends Model {
+  class NestWeightLogs extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      NestWeightLog.belongsTo(models.Chickens, { foreignKey: 'chicken_id', as: 'Chickens' })
+      NestWeightLogs.belongsTo(models.Chickens)
     }
   };
-  NestWeightLog.init({
+  NestWeightLogs.init({
     id: { primaryKey: true, type: DataTypes.INTEGER, autoIncrement: true },
     chicken_id: DataTypes.STRING,
     laid_egg: DataTypes.BOOLEAN,
@@ -21,8 +21,8 @@ module.exports = (sequelize, DataTypes) => {
     timestamp: DataTypes.DATE
   }, {
     sequelize,
-    modelName: 'NestWeightLog',
+    modelName: 'NestWeightLogs',
     underscored: true,
   });
-  return NestWeightLog;
+  return NestWeightLogs;
 };
