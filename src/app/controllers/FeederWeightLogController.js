@@ -1,22 +1,71 @@
 const { FeederWeightLogs } = require('../models');
 const { Chickens } = require('../models');
 const { Tags } = require('../models');
-const { Op } = require("sequelize");
+const sequelize = require("sequelize");
 var moment = require('moment-timezone');
 
 const get = async (req, res, next) => {
     try {
         const id = req.params.id;
-        if (id) {
+        const periodType = req.query.period_type || 'daily_avg';
+        const startDate = moment(req.query.start_date).startOf('day').format("YYYY-MM-DD HH:mm:ss");
+        const endDate = moment(req.query.end_date).endOf('day').format("YYYY-MM-DD HH:mm:ss");
+
+        let whereObject = {}
+        if (req.query.start_date != 'null' && req.query.end_date != 'null') {
+            whereObject = {
+                timestamp: {
+                    [sequelize.Op.between]: [startDate, endDate]
+                }
+            }
+        }
+
+        if (periodType === 'all_data') {
             const log = await FeederWeightLogs.findAll({
+                attributes: [
+                    'food_amount',
+                    'food_amount_at_end',
+                    'timestamp',
+                ],
+                order: [
+                    [`timestamp`, 'ASC']
+                ],
                 where: {
                     chicken_id: id,
+                    ...whereObject
                 }
             });
-            return res.status(200).json({ log });
+            return res.status(200).json({
+                values: {
+                    'food_amount': log.map((el) => el['food_amount'].toFixed(2)),
+                    'food_ate': log.map((el) => el['food_amount'].toFixed(2) - el['food_amount_at_end'].toFixed(2)),
+                    'food_amount_at_end': log.map((el) => el['food_amount_at_end'].toFixed(2))
+                },
+                timestamp: log.map((el) => moment(el.timestamp).format("DD/MM/YYYY HH:mm"))
+            });
         }
-        const logs = await FeederWeightLogs.findAll();
-        return res.status(200).json({ logs });
+        else if (periodType === 'daily_avg') {
+            const log = await FeederWeightLogs.findAll({
+                attributes: [
+                    [sequelize.literal(`AVG(food_amount)`), 'food_amount'],
+                    [sequelize.literal(`AVG(food_amount_at_end)`), 'food_amount_at_end'],
+                    [sequelize.literal(`DATE("timestamp")`), 'timestamp']
+                ],
+                group: [sequelize.literal(`DATE("timestamp")`)],
+                order: [
+                    [sequelize.literal(`DATE("timestamp")`), 'ASC']
+                ],
+                where: { chicken_id: id, ...whereObject }
+            });
+            return res.status(200).json({
+                values: {
+                    'food_amount': log.map((el) => el['food_amount'].toFixed(2)), 
+                    'food_ate': log.map((el) => el['food_amount'].toFixed(2) - el['food_amount_at_end'].toFixed(2)), 
+                    'food_amount_at_end': log.map((el) => el['food_amount_at_end'].toFixed(2))
+                },
+                timestamp: log.map((el) => moment(el.timestamp).format("DD/MM/YYYY"))
+            });
+        }
     }
     catch (e) {
         console.log(e)
@@ -34,7 +83,6 @@ const foodAmountAtEnd = async (req, res, next) => {
     catch (e) {
         return res.status(500).json({ message: 'Erro ao carregar informações do comedouro das galinhas' });
     }
-
 };
 const create = async (req, res, next) => {
     try {
@@ -64,7 +112,7 @@ const destroy = async (req, res, next) => {
         const feederData = await FeederWeightLogs.findAll({
             where: {
                 timestamp: {
-                    [Op.between]: [startDate, endDate]
+                    [sequelize.Op.between]: [startDate, endDate]
                 }
             }
         });

@@ -1,6 +1,6 @@
 const { Users } = require('./../models');
-const { Op } = require("sequelize");
 const bcrypt = require("bcrypt");
+const AuthController = require('../controllers/AuthController')
 
 const get = async (req, res, next) => {
     const user = await Users.findAll();
@@ -11,9 +11,10 @@ const login = async (req, res, next) => {
     const body = req.body;
     let user = await Users.findOne({ where: { email: body.email } });
     if (user) {
-        const validPassword = await bcrypt.compare(body.password, user.map(el => el.password));
+        const validPassword = await bcrypt.compare(body.password, user.password);
         if (validPassword) {
-            return res.status(200).json({ message: "Login efetuado com sucesso", user });
+            var token = AuthController.generateAccessToken(user.id)
+            return res.status(200).json({ message: "Login efetuado com sucesso", user, token });
         }
         return res.status(400).json({ error: "E-mail e/ou senha inválidos" });
     }

@@ -56,9 +56,9 @@ const getCanEat = async (req, res, next) => {
             }
         });
 
-        const canEatInterval = moment(lastMealTime).add(chicken.map((el) => el.meals_interval), 'hours') <= moment()
+        // const canEatInterval = moment(lastMealTime).add(chicken.map((el) => el.meals_interval), 'hours') <= moment()
         let nextMealNumber = 0;
-        if (mealsAtDay < chicken.map(el => el.meals_per_day && canEatInterval)) {
+        if (mealsAtDay < chicken.map(el => el.meals_per_day)) {
             nextMealNumber = mealsAtDay + 1
         }
         return res.status(200).json({ nextMealNumber: nextMealNumber });
@@ -96,8 +96,9 @@ const update = async (req, res, next) => {
 const destroy = async (req, res, next) => {
     try {
         const id = req.params.id;
-        const tag = await Tags.findByPk(id);
-        tag.destroy();
+        const chicken = await Chickens.findByPk(id);
+        chicken.destroy();
+        await Tags.update({ is_using: false }, { where: { id: chicken.tag_id } })
         return res.status(200).json({ message: `Galinha excluída com sucesso!` });
     }
     catch (e) {
@@ -112,7 +113,6 @@ const testConnection = async (req, res, next) => {
     catch (e) {
         return res.status(500).json({ message: `Erro estabelecer conexão` });
     }
-
 }
 
 module.exports = {
